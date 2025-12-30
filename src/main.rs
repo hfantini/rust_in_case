@@ -1,3 +1,8 @@
+use crate::args::CmdLineArgs;
+
+mod args;
+
 fn main() {
-    println!("Hello World from rust_in_case :)");
+    let value = CmdLineArgs::parse();
+    println!("{:#?}", value);
 }
