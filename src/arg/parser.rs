@@ -1,17 +1,17 @@
-use crate::{debug, trace, warn, critical};
+use std::process::Command;
+
+use crate::{debug, trace, error, critical};
 
 #[derive(Debug)]
 pub struct CmdLineArgs {
-    pub input: Option<String>,
-    pub output: Option<String>,
-    pub version: bool,
-    pub help: bool
+    pub command: Option<String>,
+    pub args: Option<Vec<String>>
 }
 
 impl Default for CmdLineArgs {
 
     fn default() -> Self {
-        CmdLineArgs { input: None, output: None, version: false, help: false }
+        CmdLineArgs { command: None, args: None }
     }
 }
 
@@ -27,56 +27,18 @@ impl CmdLineArgs {
         trace!("Parsing command-line arguments");
 
         while let Some(arg) = iter.next() {
-            if Self::is_switch(&arg) {
-                trace!("Found switch: {}", &arg);
-                Self::parse_switch(&arg, &mut ret, &mut iter);
-            } else {
-                if ret.input.is_some() {
-                    critical!("Duplicated input value");
-                    std::process::exit(2);
-                }
-
-                trace!("Input found: {}", arg);
-                ret.input = Some(arg);
+            if Self::is_command(&arg) {
+                trace!("Found command: {}", &arg);
+                ret.command = Some(arg);
             }
         }
 
         debug!("CmdLineArgs::parse() finished");
         ret
+
     }
 
-    fn is_switch(value: &str) -> bool {
-        value.starts_with('-')
-    }
-
-    fn parse_switch(
-        switch: &str,
-        args: &mut Self,
-        iter: &mut impl Iterator<Item = String>) {
-
-        debug!("CmdLineArgs::parse_switch() called");
-
-        match switch {
-            "-h" | "--help" => {
-                args.help = true;
-                trace!("'help' flag set to true");
-            }
-            "-v" | "--version" => {
-                args.version = true;
-                trace!("'version' flag set to true");
-            }
-            "-o" | "--output" => {
-                args.output = iter.next();
-                trace!(
-                    "'output' option set to {}", 
-                    args.output.as_deref().unwrap_or("?")
-                );
-            }
-            _ => {
-                warn!("Unrecognized switch: '{}'", switch);
-            }
-        }
-        
-        debug!("CmdLineArgs::parse_switch() finished");
+    fn is_command(value: &str) -> bool {
+        !value.starts_with('-')
     }
 }

@@ -1,20 +1,24 @@
-use crate::{command::command_switch::CommandSwitch, trace};
+use crate::{command::command::{Command, Runnable}, trace};
 
-pub struct CommandHelp {
+pub struct CmdHelp {
+    pub command:Command
 }
 
-impl CommandHelp {
-    pub fn create() -> CommandSwitch {
-        CommandSwitch {
-            name: "Help",
-            description: "Displays a help with all possible commands for this program.",
-            short: Some("-h"),
-            long: Some("--help"),
-            param: None,
-            func: |_value: &CommandSwitch| {
-                trace!("Help command triggered");
-                println!("Printing help...")
+impl CmdHelp {
+    pub fn create() -> CmdHelp {
+        CmdHelp {
+            command: Command {
+                name: "Help",
+                description: "Displays a help with all possible commands for this program.",
+                trigger: "help"
             }
         }
+    }
+}
+
+impl Runnable for CmdHelp {
+    fn run(&self) {
+        trace!("Help command triggered");
+        println!("Printing help...");
     }
 }
