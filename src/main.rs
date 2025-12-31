@@ -1,6 +1,5 @@
 use crate::{
-    command::{help::CommandHelp, version::CommandVersion,}, 
-    globals::CMD_LINE_ARGS
+    command::{command::Runnable, help::CmdHelp, version::CmdVersion}, globals::CMD_LINE_ARGS
 };
 
 mod arg;
@@ -12,26 +11,34 @@ fn main() {
 
     debug!("Program started");
 
-    if CMD_LINE_ARGS.version {
-        CommandVersion::create().run();
-        std::process::exit(0);
-    }
+    if CMD_LINE_ARGS.command.is_some() {
 
-    cmd_print_header();
+        let command = CMD_LINE_ARGS.command.as_ref().unwrap();
 
-    if CMD_LINE_ARGS.help {
-        CommandHelp::create().run();
-        std::process::exit(0);
-    }
+        if command == "version" {
+            CmdVersion::create().run();
+            std::process::exit(0);
+        }
 
-    if CMD_LINE_ARGS.input.is_none() {
-        trace!("The input from command-line was not specified.");
-        println!("No input file detected: type 'rustincase -h' for help");
+        print_header();
+
+        match command.as_str() {
+            "help" => {
+                CmdHelp::create().run();
+                std::process::exit(0);
+            },
+            _ => {
+                error!("Unrecognized sub-command '{}'; Type 'rustincase help' for support", command);
+                std::process::exit(1);
+            }
+        }
+    } else {
+        error!("Sub-command not found; Type 'rustincase help' for support");
         std::process::exit(1);
     }
 }
 
-fn cmd_print_header()
+fn print_header()
 {
     println!(
         r#"
