@@ -33,7 +33,7 @@ impl CmdLineArgs {
             } else {
                 if ret.input.is_some() {
                     critical!("Duplicated input value");
-                    std::process::exit(1);
+                    std::process::exit(2);
                 }
 
                 trace!("Input found: {}", arg);
