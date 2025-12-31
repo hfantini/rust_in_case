@@ -1,4 +1,4 @@
-use crate::log::{log_critical, log_debug, log_trace, log_warn};
+use crate::{debug, trace, warn, critical};
 
 #[derive(Debug)]
 pub struct CmdLineArgs {
@@ -22,30 +22,30 @@ impl CmdLineArgs {
     }
 
     pub fn parse() -> Self {
-        log_debug("CmdLineArgs::parse() called".to_string());
+        debug!("CmdLineArgs::parse() called");
         
         let mut ret = Self::default();
         let mut iter = std::env::args().skip(1);
         
-        log_debug("std::env::args() taken with skip(1)".to_string());
-        log_trace("Parsing command-line arguments".to_string());
+        debug!("std::env::args() taken with skip(1)");
+        trace!("Parsing command-line arguments");
 
         while let Some(arg) = iter.next() {
             if Self::is_switch(&arg) {
-                log_trace(format!("Found switch: {}", &arg));
+                trace!("Found switch: {}", &arg);
                 Self::parse_switch(&arg, &mut ret, &mut iter);
             } else {
                 if ret.input.is_some() {
-                    log_critical("Duplicated input value".to_string());
+                    critical!("Duplicated input value");
                     std::process::exit(1);
                 }
 
-                log_trace(format!("Input found: {}", arg));
+                trace!("Input found: {}", arg);
                 ret.input = Some(arg);
             }
         }
 
-        log_debug("CmdLineArgs::parse() finished".to_string());
+        debug!("CmdLineArgs::parse() finished");
         ret
     }
 
@@ -54,31 +54,29 @@ impl CmdLineArgs {
         args: &mut Self,
         iter: &mut impl Iterator<Item = String>) {
 
-        log_debug("CmdLineArgs::parse_switch() called".to_string());
+        debug!("CmdLineArgs::parse_switch() called");
 
         match switch {
             "-h" | "--help" => {
                 args.help = true;
-                log_trace("'help' flag set to true".to_string());
+                trace!("'help' flag set to true");
             }
             "-v" | "--version" => {
                 args.version = true;
-                log_trace("'version' flag set to true".to_string());
+                trace!("'version' flag set to true");
             }
             "-o" | "--output" => {
                 args.output = iter.next();
-                log_trace(
-                    format!(
-                        "'output' option set to {}", 
-                        args.output.as_deref().unwrap_or("?")
-                    )
+                trace!(
+                    "'output' option set to {}", 
+                    args.output.as_deref().unwrap_or("?")
                 );
             }
             _ => {
-                log_warn(format!("Unrecognized switch: '{}'", switch));
+                warn!("Unrecognized switch: '{}'", switch);
             }
         }
 
-        log_debug("CmdLineArgs::parse_switch() finished".to_string());
+        debug!("CmdLineArgs::parse_switch() finished");
     }
 }
