@@ -1,9 +1,8 @@
-use crate::args::CmdLineArgs;
+use crate::{globals::CMD_LINE_ARGS};
 
-mod args;
+mod arg;
 mod log;
+mod globals;
 
 fn main() {
-    let value = CmdLineArgs::parse();
-    println!("{:#?}", value);
 }

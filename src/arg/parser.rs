@@ -17,10 +17,6 @@ impl Default for CmdLineArgs {
 
 impl CmdLineArgs {
 
-    pub fn is_switch(value: &str) -> bool {
-        value.starts_with('-')
-    }
-
     pub fn parse() -> Self {
         debug!("CmdLineArgs::parse() called");
         
@@ -47,6 +43,10 @@ impl CmdLineArgs {
 
         debug!("CmdLineArgs::parse() finished");
         ret
+    }
+
+    fn is_switch(value: &str) -> bool {
+        value.starts_with('-')
     }
 
     fn parse_switch(
@@ -76,7 +76,7 @@ impl CmdLineArgs {
                 warn!("Unrecognized switch: '{}'", switch);
             }
         }
-
+        
         debug!("CmdLineArgs::parse_switch() finished");
     }
 }
