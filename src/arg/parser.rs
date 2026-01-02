@@ -1,11 +1,11 @@
-use std::process::Command;
+use std::{collections::HashMap};
 
-use crate::{debug, trace, error, critical};
+use crate::{debug, trace, error};
 
 #[derive(Debug)]
 pub struct CmdLineArgs {
     pub command: Option<String>,
-    pub args: Option<Vec<String>>
+    pub args: Option<HashMap<String, Vec<String>>>
 }
 
 impl Default for CmdLineArgs {
@@ -26,11 +26,52 @@ impl CmdLineArgs {
         debug!("std::env::args() taken with skip(1)");
         trace!("Parsing command-line arguments");
 
+        let mut cmd: Option<String> = None;
+        let mut flag: Option<String> = None;
+        let mut param: Vec<String> = Vec::new();
+
+        let mut params: HashMap<String, Vec<String>> = HashMap::new();
+
+        // PARSING CMD-LINE VALUES
+
         while let Some(arg) = iter.next() {
-            if Self::is_command(&arg) {
-                trace!("Found command: {}", &arg);
-                ret.command = Some(arg);
+            if(!Self::is_switch(&arg)) {
+                if cmd.is_none() {
+                    cmd = Some(arg);
+                } else {
+
+                    if flag.is_none() {
+                        error!("Parameter {} found before a command or switch. 
+                            \n\n type 'rustincase help' for more info.", &arg);
+                        std::process::exit(2);
+                    }
+                    
+                    param.push(arg);
+                }
+            } else {
+
+                if cmd.is_none() {
+                    error!("Switch {} found before a command. 
+                            \n\n type 'rustincase help' for more info.", &arg);
+                    std::process::exit(2);
+                }
+
+                if flag.is_some() {
+                    params.insert(flag.unwrap().clone(), param.clone());
+
+                    flag = None;
+                    param.clear();
+                }
+
+                flag = Some(arg);
             }
+        }
+
+        // PROCESSING PARSED RESULTS
+
+        ret.command = cmd;
+        if(params.len() > 0) {
+            ret.args = Some(params.clone());
         }
 
         debug!("CmdLineArgs::parse() finished");
@@ -38,7 +79,8 @@ impl CmdLineArgs {
 
     }
 
-    fn is_command(value: &str) -> bool {
-        !value.starts_with('-')
+    fn is_switch(value: &str) -> bool {
+        value.starts_with('-')
     }
+
 }

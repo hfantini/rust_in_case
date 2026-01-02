@@ -1,11 +1,12 @@
 use crate::{
-    command::{command::Runnable, help::CmdHelp, version::CmdVersion}, globals::CMD_LINE_ARGS
+    command::{backup::CmdBackup, command::Runnable, help::CmdHelp, version::CmdVersion}, globals::CMD_LINE_ARGS
 };
 
 mod arg;
 mod log;
 mod command;
 mod globals;
+mod util;
 
 fn main() {
 
@@ -13,7 +14,12 @@ fn main() {
 
     if CMD_LINE_ARGS.command.is_some() {
 
-        let command = CMD_LINE_ARGS.command.as_ref().unwrap();
+        if CMD_LINE_ARGS.command.is_none() {
+            error!("No sub-command found; Type 'rustincase help' for support");
+            std::process::exit(1);
+        }
+
+        let command: &String = CMD_LINE_ARGS.command.as_ref().unwrap();
 
         if command == "version" {
             CmdVersion::create().run();
@@ -27,11 +33,21 @@ fn main() {
                 CmdHelp::create().run();
                 std::process::exit(0);
             },
+            "backup" => {
+                CmdBackup::create(
+                    if CMD_LINE_ARGS.args.is_some() {
+                        Some(CMD_LINE_ARGS.args.as_ref().unwrap().clone())
+                    } else {
+                        None
+                    }
+                ).run();
+            }
             _ => {
                 error!("Unrecognized sub-command '{}'; Type 'rustincase help' for support", command);
                 std::process::exit(1);
             }
         }
+        
     } else {
         error!("Sub-command not found; Type 'rustincase help' for support");
         std::process::exit(1);

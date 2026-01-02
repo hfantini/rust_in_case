@@ -1,7 +1,7 @@
 
 use colored::*;
-use time::OffsetDateTime;
-use time::macros::format_description;
+
+use crate::util::datetime::now_formatted;
 
 #[derive(PartialEq, Eq)]
 pub enum Level {
@@ -22,21 +22,14 @@ pub fn log(value: Log) {
 
     // DATE & TIME
 
-    let format = 
-        format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
-
-    let current_date_time = 
-        OffsetDateTime::now_local().unwrap_or(OffsetDateTime::now_utc());
-
-    let formatted_date_time = 
-        current_date_time.format(&format).unwrap_or("????-??-?? ??:??:??".to_string());
+    let formatted_datetime_now = now_formatted();
 
     // LOG MESSAGE TO STDOUT
 
     let message = format!(
         "{} {}: {}",
         translate_level_prefix(&value.level),
-        formatted_date_time,
+        formatted_datetime_now,
         value.message
     );
 

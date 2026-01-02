@@ -10,7 +10,8 @@ impl CmdHelp {
             command: Command {
                 name: "Help",
                 description: "Displays a help with all possible commands for this program.",
-                trigger: "help"
+                trigger: "help",
+                args: None
             }
         }
     }
