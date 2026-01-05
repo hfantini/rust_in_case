@@ -39,3 +39,10 @@ macro_rules! critical {
         $crate::log::logger::log_critical(format!($($arg)*));
     };
 }
+
+#[macro_export]
+macro_rules! success {
+    ($($arg:tt)*) => {
+        $crate::log::logger::log_success(format!($($arg)*));
+    };
+}
