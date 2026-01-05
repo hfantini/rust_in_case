@@ -10,7 +10,8 @@ pub enum Level {
     INFO,
     WARN,
     ERROR,
-    CRITICAL
+    CRITICAL,
+    SUCCESS
 }
 
 pub struct Log {
@@ -69,6 +70,10 @@ pub fn log_critical(message: String) {
     log(Log {level: Level::CRITICAL, message: message});
 }
 
+pub fn log_success(message: String) {
+    log(Log {level: Level::SUCCESS, message: message});
+}
+
 fn translate_level_prefix(level: &Level) -> &'static str {
     match level {
         Level::TRACE    => "[ TRCE ]",
@@ -76,7 +81,8 @@ fn translate_level_prefix(level: &Level) -> &'static str {
         Level::INFO     => "[ INFO ]",
         Level::WARN     => "[ WARN ]",
         Level::ERROR    => "[ ERRO ]",
-        Level::CRITICAL => "[ CRIT ]"
+        Level::CRITICAL => "[ CRIT ]",
+        Level::SUCCESS  => "[  OK  ]"
     }
 }
 
@@ -87,6 +93,7 @@ fn colorize_log(msg: &String, level: &Level) -> String {
         Level::WARN => msg.bright_yellow().to_string(),
         Level::ERROR => msg.bright_red().to_string(),
         Level::CRITICAL => msg.red().to_string(),
+        Level::SUCCESS => msg.bright_green().to_string(),
         _ => msg.normal().to_string()
     }
 }

@@ -10,7 +10,3 @@ pub struct Command {
 pub trait Runnable {
     fn run(&self);
 }
-
-pub trait Validatable {
-    fn validate(&self);
-}

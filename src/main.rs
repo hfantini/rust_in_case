@@ -1,5 +1,5 @@
 use crate::{
-    command::{backup::CmdBackup, command::Runnable, help::CmdHelp, version::CmdVersion}, globals::CMD_LINE_ARGS
+    command::{backup::CmdBackup, command::Runnable, help::CmdHelp, version::CmdVersion}, globals::CMD_LINE_ARGS, util::help::get_help_message
 };
 
 mod arg;
@@ -43,7 +43,7 @@ fn main() {
                 ).run();
             }
             _ => {
-                error!("Unrecognized sub-command '{}'; Type 'rustincase help' for support", command);
+                error!("Unrecognized sub-command '{}'; {}", command, get_help_message());
                 std::process::exit(1);
             }
         }

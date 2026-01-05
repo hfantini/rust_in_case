@@ -9,7 +9,6 @@ pub struct CmdLineArgs {
 }
 
 impl Default for CmdLineArgs {
-
     fn default() -> Self {
         CmdLineArgs { command: None, args: None }
     }
@@ -56,7 +55,10 @@ impl CmdLineArgs {
                     std::process::exit(2);
                 }
 
+                // PUSHING COMMAND BEFORE THE NEXT ONE
+
                 if flag.is_some() {
+                    trace!("Pushing command '{}' to the structure", flag.as_ref().unwrap());
                     params.insert(flag.unwrap().clone(), param.clone());
 
                     flag = None;
@@ -65,6 +67,13 @@ impl CmdLineArgs {
 
                 flag = Some(arg);
             }
+        }
+
+        // PROCESSING THE LAST RESULT
+        
+        if flag.is_some() {
+            trace!("Pushing final command '{}' to the structure", flag.as_ref().unwrap());
+            params.insert(flag.unwrap().clone(), param.clone());
         }
 
         // PROCESSING PARSED RESULTS
