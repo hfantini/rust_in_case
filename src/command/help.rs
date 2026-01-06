@@ -1,3 +1,5 @@
+use std::io::Error;
+
 use crate::{command::command::{Command, Runnable}, trace};
 
 pub struct CmdHelp {
@@ -18,8 +20,9 @@ impl CmdHelp {
 }
 
 impl Runnable for CmdHelp {
-    fn run(&self) {
+    fn run(&self) -> Result<(), Error> {
         trace!("Help command triggered");
         println!("Printing help...");
+        Ok(())
     }
 }
