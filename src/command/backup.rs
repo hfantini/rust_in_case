@@ -1,7 +1,9 @@
+use core::fmt;
 use std::{
     collections::HashMap,
+    fmt::Display,
     fs::File,
-    io::{BufRead, BufReader, Error, ErrorKind},
+    io::{BufRead, BufReader},
     path::Path,
 };
 
@@ -13,12 +15,33 @@ use crate::{
     debug, info,
     log::loggable::Loggable,
     trace,
-    util::help::get_help_message,
 };
 
 pub struct CmdBackup {
     pub command: Command,
 }
+
+#[derive(Debug)]
+pub enum CmdBackupErrors {
+    NoArgumentsFound,
+    ValidationFailed,
+}
+
+impl Display for CmdBackupErrors {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let prefix = "CmdBackup:";
+        match self {
+            CmdBackupErrors::NoArgumentsFound => {
+                write!(f, "{} No arguments found", prefix)
+            }
+            CmdBackupErrors::ValidationFailed => {
+                write!(f, "{} Argument validation failed", prefix)
+            }
+        }
+    }
+}
+
+impl std::error::Error for CmdBackupErrors {}
 
 impl CmdBackup {
     pub fn create(args: Option<HashMap<String, Vec<String>>>) -> CmdBackup {
@@ -35,23 +58,20 @@ impl CmdBackup {
 }
 
 impl Runnable for CmdBackup {
-    fn run(&self) -> Result<(), Error> {
+    fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         info!("CmdBackup: command triggered");
 
         // ARG PARSING
 
         if self.command.args.is_none() {
-            return Err(Error::new(
-                ErrorKind::Other,
-                "CmdBackup: No arguments found.",
-            ));
+            return Err(Box::new(CmdBackupErrors::NoArgumentsFound));
         }
 
         let args = self
             .command
             .args
             .as_ref()
-            .expect("Command parameters must exist");
+            .ok_or_else(|| Box::new(CmdBackupErrors::NoArgumentsFound))?;
 
         // VALIDATION
 
@@ -59,8 +79,7 @@ impl Runnable for CmdBackup {
         validation.log("backup");
 
         if !validation.status {
-            info!("{}", get_help_message());
-            std::process::exit(4);
+            return Err(Box::new(CmdBackupErrors::ValidationFailed));
         }
 
         let path: &String = ["-i", "--input"]
@@ -73,17 +92,17 @@ impl Runnable for CmdBackup {
         info!("Processing file: {}", path);
 
         let file = File::open(path)?;
+
         let lock = file.lock_shared()?;
 
         let reader = BufReader::new(file);
 
         for line in reader.lines() {
-            let line = line?; 
+            let line = line.map_err(|e| format!("{}", e))?;
             println!("Linha: {}", line);
-        } 
+        }
 
         Ok(())
-
     }
 }
 
