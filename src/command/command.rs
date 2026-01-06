@@ -8,5 +8,5 @@ pub struct Command {
 }
 
 pub trait Runnable {
-    fn run(&self);
+    fn run(&self) -> Result<(), std::io::Error>;
 }

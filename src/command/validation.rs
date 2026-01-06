@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{error, log::loggable::Loggable, success, trace, warn};
 
 pub struct Validation {
@@ -6,14 +8,14 @@ pub struct Validation {
     pub errors: Vec<String>
 }
 
-pub trait Validatable {
-    fn validate(&self) -> Validation;
-}
-
 impl Default for Validation {
     fn default() -> Self {
         Validation { status: false, warnings: Vec::new(), errors: Vec::new() }
     }
+}
+
+pub trait Validatable {
+    fn validate(&self, args: &HashMap<String, Vec<String>>) -> Validation;
 }
 
 impl Loggable for Validation {
