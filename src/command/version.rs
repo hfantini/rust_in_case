@@ -1,5 +1,3 @@
-use std::io::Error;
-
 use crate::{command::{command::{Command, Runnable}, version}, trace};
 
 pub struct CmdVersion {
@@ -20,7 +18,7 @@ impl CmdVersion {
 }
 
 impl Runnable for CmdVersion {
-    fn run(&self) -> Result<(), Error> {
+    fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         trace!("Version command triggered");
         println!(env!("CARGO_PKG_VERSION"));
         Ok(())

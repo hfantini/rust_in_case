@@ -1,19 +1,19 @@
 use crate::{
-    command::{backup::CmdBackup, command::Runnable, help::CmdHelp, version::CmdVersion}, globals::CMD_LINE_ARGS, util::help::get_help_message
+    command::{backup::CmdBackup, command::Runnable, help::CmdHelp, version::CmdVersion},
+    globals::CMD_LINE_ARGS,
+    util::help::get_help_message,
 };
 
 mod arg;
-mod log;
 mod command;
 mod globals;
+mod log;
 mod util;
 
 fn main() {
-
     debug!("Program started");
 
     if CMD_LINE_ARGS.command.is_some() {
-
         if CMD_LINE_ARGS.command.is_none() {
             error!("No sub-command found; Type 'rustincase help' for support");
             std::process::exit(1);
@@ -21,41 +21,45 @@ fn main() {
 
         let command: &String = CMD_LINE_ARGS.command.as_ref().unwrap();
 
-        if command == "version" {
-            CmdVersion::create().run();
-            std::process::exit(0);
-        }
-
         print_header();
 
+        let mut err: Option<Box<dyn std::error::Error>> = None;
+
         match command.as_str() {
+            "version" => {
+                CmdVersion::create().run().unwrap_or_else(|e| err = Some(e));
+            }
             "help" => {
-                CmdHelp::create().run();
-                std::process::exit(0);
-            },
+                CmdHelp::create().run().unwrap_or_else(|e| err = Some(e));
+            }
             "backup" => {
                 CmdBackup::create(
-                    if CMD_LINE_ARGS.args.is_some() {
-                        Some(CMD_LINE_ARGS.args.as_ref().unwrap().clone())
-                    } else {
-                        None
-                    }
-                ).run();
+                    Some(CMD_LINE_ARGS.args.as_ref().unwrap().clone())
+                )
+                .run()
+                .unwrap_or_else(|e| err = Some(e));;
             }
             _ => {
-                error!("Unrecognized sub-command '{}'; {}", command, get_help_message());
-                std::process::exit(1);
+                error!(
+                    "Unrecognized sub-command '{}'; {}",
+                    command,
+                    get_help_message()
+                );
             }
         }
-        
+
+        if err.is_some() {
+            error!("Process finished with error:\n {}", err.expect("Error message must be set"));
+            std::process::exit(1);
+        }
+
     } else {
         error!("Sub-command not found; Type 'rustincase help' for support");
         std::process::exit(1);
     }
 }
 
-fn print_header()
-{
+fn print_header() {
     println!(
         r#"
     ░█▀▄░█░█░█▀▀░▀█▀░░░░░▀█▀░█▀█░░░░░█▀▀░█▀█░█▀▀░█▀▀
@@ -64,5 +68,8 @@ fn print_header()
     
     Author(s): {}
     Version: {}
-"#,env!("CARGO_PKG_AUTHORS"), env!("CARGO_PKG_VERSION"));
+"#,
+        env!("CARGO_PKG_AUTHORS"),
+        env!("CARGO_PKG_VERSION")
+    );
 }

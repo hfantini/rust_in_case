@@ -8,5 +8,5 @@ pub struct Command {
 }
 
 pub trait Runnable {
-    fn run(&self) -> Result<(), std::io::Error>;
+    fn run(&self) -> Result<(), Box<dyn std::error::Error>>;
 }
