@@ -2,19 +2,19 @@ use core::fmt;
 use std::{
     collections::HashMap,
     fmt::Display,
-    fs::File,
-    io::{BufRead, BufReader},
+    fs::{self, File},
+    io::{BufRead, BufReader, Seek},
     path::Path,
 };
+
+use zip::{ZipWriter, write::SimpleFileOptions};
+use std::io::Write;
 
 use crate::{
     command::{
         command::{Command, Runnable},
         validation::{Validatable, Validation},
-    },
-    debug, info,
-    log::loggable::Loggable,
-    trace,
+    }, debug, info, log::loggable::Loggable, success, trace
 };
 
 pub struct CmdBackup {
@@ -55,6 +55,31 @@ impl CmdBackup {
             },
         }
     }
+
+    fn handle_item<T>(
+        source: &Path,
+        writer: &mut ZipWriter<T>,
+        options: SimpleFileOptions) -> Result<(), Box<dyn std::error::Error>>
+    where T: Write + Seek, {
+        if source.is_dir() {
+            info!("Directory found: {}", source.display());
+
+            for entry in fs::read_dir(source)? {
+                let entry = entry?;
+                let path = entry.path();
+                Self::handle_item(&path, writer, options)?;
+            }
+        } else {
+            info!("File found: {}", source.display());
+
+            let mut file = File::open(source)?;
+
+            writer.start_file(source.to_string_lossy(), options)?;
+            std::io::copy(&mut file, writer)?;
+        }
+
+        Ok(())
+    }
 }
 
 impl Runnable for CmdBackup {
@@ -91,17 +116,29 @@ impl Runnable for CmdBackup {
 
         info!("Processing file: {}", path);
 
-        let file = File::open(path)?;
+        let output = File::create("output.zip")?;
+        let mut zip = ZipWriter::new(output);
 
-        let lock = file.lock_shared()?;
+        let input = File::open(path)?;
+        let _lock = input.lock_shared()?;
+        let reader = BufReader::new(input);
 
-        let reader = BufReader::new(file);
+        let options = SimpleFileOptions::default()
+            .compression_method(zip::CompressionMethod::Stored)
+            .unix_permissions(0o755);
 
         for line in reader.lines() {
-            let line = line.map_err(|e| format!("{}", e))?;
-            println!("Linha: {}", line);
+            let line = line?;
+            let path = Path::new(&line);
+
+            Self::handle_item(path, &mut zip, options)?;
+
+            break;
         }
 
+        zip.finish()?;
+
+        success!("Backup finished: all files processed successfully.");
         Ok(())
     }
 }
