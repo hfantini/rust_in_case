@@ -6,6 +6,7 @@ authors = ["Henrique Fantini - henrique.fantini@hotmail.com"]
 
 [dependencies]
 colored = "3.0.0"
-time = { version = "0.3.44", features = ["macros", "formatting", "local-offset"] }
+time = { version = "0.3.45", features = ["macros", "formatting", "local-offset"] }
 fs4 = "0.13.1"
 zip = "7.0.0"
+textwrap = "0.16.2"
