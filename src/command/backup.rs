@@ -48,9 +48,6 @@ impl CmdBackup {
         CmdBackup {
             command: Command {
                 name: "Backup",
-                description: "Executes a compressed backup (.zip) 
-                using an input file that lists all source file paths.",
-                trigger: "help",
                 args: args,
             },
         }

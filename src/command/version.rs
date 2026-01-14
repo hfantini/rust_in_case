@@ -9,8 +9,6 @@ impl CmdVersion {
             CmdVersion {
             command: Command {
                 name: "Version",
-                description: "Displays the current version.",
-                trigger: "version",
                 args: None
             }
         }
